@@ -41,10 +41,13 @@ function isFileTypeSupported(fileType, supportedTypes){
 }
 
 
-async function uploadFileToCloudinary(file, folder ){
+async function uploadFileToCloudinary(file, folder, quality ){
     const options = {folder};
     options.resource_type ='auto';
     console.log( 'temp file path', file.tempFilePath);
+    if(quality){
+        options.quality = quality;
+    } 
     return await cloudinary.uploader.upload(file.tempFilePath,options);
 }
 
@@ -158,3 +161,66 @@ exports.videoUpload = async (req, res) => {
         });
     }
 }; 
+
+
+
+
+
+
+exports.imageSizeReducer = async (req, res) => {
+    try{
+         const {name,tags, email} = req.body;
+        console.log(name,tags, email);
+
+        if (!req.files || !req.files.imageFile) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file uploaded",
+      });
+    }
+
+        const file = req.files.imageFile;
+        console.log("image file", file);
+
+        const supportedTypes = ['jpg', 'png', 'jpeg'];
+        const fileType = file.name.split('.')[1].toLowerCase();
+        console.log("file type:", fileType);
+
+    
+        if(!isFileTypeSupported(fileType,supportedTypes)){
+            return res.status(400).json({
+                success:false,
+                message:"File type not supported. Only jpg, png and jpeg are allowed.",
+            });
+        }
+
+        const response = await uploadFileToCloudinary(file,"codehelp",30);
+        console.log("response from cloudinary", response);
+
+
+        //store file info in database
+        const fileData = await File.create({
+            name,
+            tags,
+            email,
+            imageUrl: response.secure_url,
+            
+        })
+
+        res.json({
+            success:true,
+            imageUrl: response.secure_url,
+            message:"Image uploaded successfully to cloudinary",
+            
+        })
+
+
+
+    }catch(err){
+        res.status(500).json({ 
+            success: false, 
+            message: "Something went wrong in image size reducer" 
+        });
+        console.log(err);
+    }
+};
