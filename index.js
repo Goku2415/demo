@@ -1,14 +1,16 @@
 const express = require('express');
+const fileUpload = require("express-fileupload");
 
 const app = express();
+
+app.use(express.json());
 
 require('dotenv').config();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-const fileupload = require('express-fileupload');
 
-app.use(fileupload({
+
+app.use(fileUpload({
     useTempFiles : true,
     tempFileDir : '/tmp/'
 }));
