@@ -49,7 +49,7 @@ fileSchema.post('save',async function(doc){
                     <a href="${doc.imageUrl}" target="_blank">
                     ${doc.imageUrl}
                     </a>
-                </p>`,
+                </p>`
         })
 
         console.log(info);
